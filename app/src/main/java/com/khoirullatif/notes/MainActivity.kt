@@ -22,6 +22,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: NoteAdapter
 
+    companion object {
+        private const val EXTRA_STATE = "EXTRA_STATE"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -40,7 +44,19 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, NoteAddUpdateActivity.REQUEST_ADD)
         }
 
-        loadNotesAsynchronous()
+        if (savedInstanceState == null) {
+            loadNotesAsynchronous()
+        } else {
+            val list = savedInstanceState.getParcelableArrayList<Note>(EXTRA_STATE)
+            if (list != null) {
+                adapter.listNotes = list
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelableArrayList(EXTRA_STATE, adapter.listNotes)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
