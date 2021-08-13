@@ -29,7 +29,8 @@ class NoteAdapter(private val activity: Activity) : RecyclerView.Adapter<NoteAda
             binding.tvItemTitle.text = note.title
             binding.tvItemDescription.text = note.description
             binding.tvItemDate.text = note.date
-            binding.cvItemNote.setOnClickListener(CustomOnItemClickListener(adapterPosition, object : CustomOnItemClickListener.OnItemClickCallback {
+            binding.cvItemNote.setOnClickListener(
+                CustomOnItemClickListener(adapterPosition, object : CustomOnItemClickListener.OnItemClickCallback {
                 override fun onItemClicked(view: View, position: Int) {
                     val intent = Intent(activity, NoteAddUpdateActivity::class.java)
                     intent.putExtra(NoteAddUpdateActivity.EXTRA_POSITION, position)

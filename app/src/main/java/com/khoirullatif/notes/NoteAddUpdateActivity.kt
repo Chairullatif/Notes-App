@@ -49,6 +49,7 @@ class NoteAddUpdateActivity : AppCompatActivity(), View.OnClickListener {
         note = intent.getParcelableExtra(EXTRA_NOTE)
         if (note != null) {
             position = intent.getIntExtra(EXTRA_POSITION, 0)
+            isEdit = true
         } else {
             note = Note()
         }

@@ -3,6 +3,7 @@ package com.khoirullatif.notes
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -22,8 +23,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: NoteAdapter
 
+    private lateinit var noteHelper: NoteHelper
+
     companion object {
         private const val EXTRA_STATE = "EXTRA_STATE"
+        private val TAG = MainActivity::class.java.simpleName
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +36,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportActionBar?.title = "Notes"
+
+        noteHelper = NoteHelper.getInstance(applicationContext)
 
         binding.rvNotes.layoutManager = LinearLayoutManager(this)
         binding.rvNotes.setHasFixedSize(true)
@@ -51,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             if (list != null) {
                 adapter.listNotes = list
             }
+            binding.progressbar.visibility = View.INVISIBLE
         }
     }
 
@@ -68,18 +75,20 @@ class MainActivity : AppCompatActivity() {
                     val note =
                         data.getParcelableExtra<Note>(NoteAddUpdateActivity.EXTRA_NOTE) as Note
 
+                    Log.d(TAG, "onActivityResult: ADD $note")
                     adapter.addItem(note)
                     binding.rvNotes.smoothScrollToPosition(adapter.itemCount - 1)
 
                     showSnackbarMessage("Satu item berhasil ditambahkan")
                 }
-                NoteAddUpdateActivity.RESULT_UPDATE ->
+                NoteAddUpdateActivity.REQUEST_UPDATE ->
                     when (resultCode) {
                         NoteAddUpdateActivity.RESULT_UPDATE -> {
                             val note =
                                 data.getParcelableExtra<Note>(NoteAddUpdateActivity.EXTRA_NOTE) as Note
                             val position = data.getIntExtra(NoteAddUpdateActivity.EXTRA_POSITION, 0)
 
+                            Log.d(TAG, "onActivityResult: UPDATE = $position")
                             adapter.updateItem(position, note)
                             binding.rvNotes.smoothScrollToPosition(position)
                             showSnackbarMessage("Satu item berhasil diubah")
@@ -102,14 +111,12 @@ class MainActivity : AppCompatActivity() {
     private fun loadNotesAsynchronous() {
         GlobalScope.launch(Dispatchers.Main) {
             binding.progressbar.visibility = View.VISIBLE
-            val noteHelper = NoteHelper.getInstance(applicationContext)
             noteHelper.open()
             //      async, itu mengembalikan nilai deferred. Sedangkan launch tidak
             val deferredNotes = async(Dispatchers.IO) {
                 val cursor = noteHelper.queryAll()
                 MappingHelper.mapCursorToArrayList(cursor)
             }
-            noteHelper.close()
             binding.progressbar.visibility = View.INVISIBLE
             val notes = deferredNotes.await()
             if (notes.size > 0) {
@@ -118,6 +125,7 @@ class MainActivity : AppCompatActivity() {
                 adapter.listNotes = ArrayList()
                 showSnackbarMessage("Tidak ada data saat ini")
             }
+            noteHelper.close()
         }
     }
 }
