@@ -10,6 +10,9 @@ object MappingHelper {
     fun mapCursorToArrayList(notesCursor: Cursor?): ArrayList<Note>{
         val noteList = ArrayList<Note>()
 
+        // apply digunakan untuk menyingkat kode berulang
+        // tanpa apply getInt harus ditulis notesCursor.getInt; dan getColumnInde... harus ditulis
+        // notesCursor.getColumnInde...
         notesCursor?.apply {
             while (moveToNext()) {
                 val id = getInt(getColumnIndexOrThrow(DatabaseContract.NoteColumns._ID))

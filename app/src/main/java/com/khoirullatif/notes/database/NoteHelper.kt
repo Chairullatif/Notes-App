@@ -15,6 +15,7 @@ class NoteHelper (context: Context) {
     companion object {
         private const val DATABASE_TABLE = TABLE_NAME
 
+        // Singelton NoteHelper
         // Nantinya digunakan untuk inisiasi database
         private var INSTANCE: NoteHelper? = null
         fun getInstance(context: Context): NoteHelper =

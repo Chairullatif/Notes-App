@@ -12,10 +12,7 @@ import com.khoirullatif.notes.database.NoteHelper
 import com.khoirullatif.notes.databinding.ActivityMainBinding
 import com.khoirullatif.notes.entity.Note
 import com.khoirullatif.notes.helper.MappingHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            loadNotesAsynchronous()
+            laodNotesAsync()
         } else {
             val list = savedInstanceState.getParcelableArrayList<Note>(EXTRA_STATE)
             if (list != null) {
@@ -126,6 +123,29 @@ class MainActivity : AppCompatActivity() {
                 showSnackbarMessage("Tidak ada data saat ini")
             }
             noteHelper.close()
+        }
+    }
+
+    private fun laodNotesAsync() {
+        binding.progressbar.visibility = View.VISIBLE
+        noteHelper.open()
+        try {
+            GlobalScope.launch(Dispatchers.Default) {
+                val cursor = noteHelper.queryAll()
+                val notes = MappingHelper.mapCursorToArrayList(cursor)
+                withContext(Dispatchers.Main) {
+                    binding.progressbar.visibility = View.INVISIBLE
+                    if (notes.size > 0) {
+                        adapter.listNotes = notes
+                    } else {
+                        adapter.listNotes = ArrayList()
+                        showSnackbarMessage("Tidak ada data saat ini")
+                    }
+                }
+                noteHelper.close()
+            }
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
         }
     }
 }
